@@ -12,6 +12,24 @@ app.get("*"), (req, res) => {
 
 const httpServer = http.Server(app);
 
+const io = new Server(httpServer, { cors: { origin: "*"} });
+const users = [];
+
+io.on("connection", (socket) => {
+    socket.on("disconnect", () => {
+
+    });
+    socket.on("onLogin", (user) => {
+
+    });
+    socket.on("onUserSelected", (user) => {
+
+    });
+    socket.on("onMessage", (message) => {
+
+    });
+})
+
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
