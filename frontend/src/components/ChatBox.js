@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import socketIOClient from "socket.io-client";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
@@ -7,12 +8,48 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 
+const ENDPOINT = 
+  window.location.host.indexOf("localhost") >= 0
+    ? "http://127.0.0.1:4000"
+    : window.location.host;
+
 export default function ChatBox() {
+
+    const uiMessageRef = useRef(null);
+  
+    const [userName, setUserName] = useState("");
+    const [messages, setMessages] = useState([
+      { from: "System", body: "Hello there, Please ask your question."},
+    ]);
+
+    const [socket, setSocket] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [messageBody, setMessageBody] = useState('');
+    const [messageBody, setMessageBody] = useState("");
+
+    useEffect( () => {
+      if (uiMessageRef.current) {
+        uiMessageRef.current.scrollBy({
+          top: uiMessageRef.current.scrollHeight,
+          left: 0,
+          behavior: "smooth"
+        });
+      }
+      if (socket) {
+        socket.emit("onLogin", { name: userName });
+        socket.on("message", (data) => {
+          console.log(messages);
+          setMessages([...messages, data]);
+        });
+      }
+    }, [messages, socket, userName]);
 
     const supportHandler = () => {
         setIsOpen(true);
+        if (!userName) {
+          setUserName(prompt("Please enter your name"));
+        }
+        const sk = socketIOClenet(ENDPOINT);
+        setSocket(sk);
     }
 
     const closeHandler = () => {
@@ -22,11 +59,14 @@ export default function ChatBox() {
     const submitHandler = (e) => {
         e.preventDefault();
         if (!messageBody.trim()) {
-            alert("Error. Please type message.");
-        } else {
-
+          alert("Error. Please type message.");
+        } else { 
+          setMessages([
+            ...messages,
+            { body: messageBody, from: userName, to: "Admin"},
+          ]);
         }
-    }
+    };
 
     return (
         <div className="chatbox">
@@ -51,7 +91,7 @@ export default function ChatBox() {
                           </Col>
                         </Row>
                         <hr />
-                        <ListGroup>
+                        <ListGroup ref={uiMessageRef}>
                           <ListGroup.Item>no messages</ListGroup.Item>
                         </ListGroup>
                         <form onSubmit={submitHandler}>
