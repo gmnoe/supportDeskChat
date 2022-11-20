@@ -10,3 +10,9 @@
   max-height: 20rem;
   margin-bottom: 1rem;
 }
+
+.admin .list-group {
+  overflow: scroll;
+  height: 68vh;
+  margin-bottom: 1rem;
+}
